@@ -1,36 +1,27 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+Bienvenue sur mon application de reconnaissance de caractères
 
-## Getting Started
+Cette application, que j'ai développée en utilisant Next.js et TensorFlow.js, permet de reconnaître des caractères manuscrits en temps réel. Elle est basée sur le modèle EMNIST ByClass et peut identifier des caractères alphanumériques, incluant les lettres de A à Z (en majuscules et minuscules) et les chiffres de 0 à 9.
 
-First, run the development server:
+Fonctionnalités principales
+•	Reconnaissance instantanée : Dessinez simplement un caractère dans le canvas et l'application prédit quel caractère vous avez écrit, en affichant aussi la confiance du modèle dans cette prédiction.
+•	Interaction fluide : Le dessin se fait directement avec la souris sur un canvas HTML5, rendant l'expérience utilisateur intuitive et directe.
+•	Options pratiques : Un bouton 'Clear' permet d'effacer le canvas pour permettre de nouvelles entrées sans encombre.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Architecture de l'application
+•	Interface utilisateur : Construite avec Next.js, l'interface gère efficacement les interactions et l'affichage des résultats.
+•	Gestion des données : TensorFlow.js me permet de charger et d'exécuter le modèle directement dans le navigateur, sans traitement côté serveur, assurant une réactivité maximale.
+•	Modèle de machine learning : Le fichier model.json est un modèle EMNIST ByClass pré-entraîné, chargé dès l'accès à la page pour prédire les caractères dessinés.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Guide d'utilisation
+1.	Chargement du modèle : À l'ouverture de la page, le modèle se charge automatiquement.
+2.	Dessin : Avec la souris, tracez un caractère sur le canvas noir.
+3.	Affichage des résultats : Lâchez la souris pour voir la prédiction s'afficher sous le canvas, accompagnée de la confiance du modèle.
+4.	Réinitialisation : Cliquez sur 'Clear' pour nettoyer le canvas et faire d'autres prédictions.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Technologies implémentées
+•	Next.js : Utilisé pour le framework front-end, offrant robustesse et facilité de déploiement.
+•	TensorFlow.js : Employé pour le traitement des données de machine learning directement dans le navigateur de l'utilisateur.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
-## Learn More
+Pour plus de détails sur le projet ou pour y contribuer, vous pouvez visiter le dépôt GitHub [ajouter le lien ici].
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.

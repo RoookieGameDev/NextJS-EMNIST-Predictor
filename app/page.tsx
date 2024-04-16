@@ -1,95 +1,138 @@
-import Image from "next/image";
-import styles from "./page.module.css";
-
-export default function Home() {
-  return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
+"use client";
+import React, { useEffect, useRef, useState } from 'react';
+import * as tf from '@tensorflow/tfjs';
+import './globals.css';
+ 
+const characters = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+ 
+const Home: React.FC = () => {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [model, setModel] = useState<tf.LayersModel | null>(null);
+ 
+    const [isPainting, setIsPainting] = useState<boolean>(false);
+    const [mousePosition, setMousePosition] = useState<{x: number; y: number} | undefined>(undefined);
+    const [prediction, setPrediction] = useState<string>('');
+    const [confidence, setConfidence] = useState<string>('');
+ 
+    useEffect(() => {
+        const loadModel = async () => {
+            const loadedModel = await tf.loadLayersModel('/model/model.json');
+            setModel(loadedModel);
+            console.log('Model loaded');
+        };
+        loadModel();
+    }, []);
+ 
+    const getMousePos = (canvas: HTMLCanvasElement, event: MouseEvent) => {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top
+        };
+    };
+ 
+    const startPainting = (event: MouseEvent) => {
+        const coordinates = getMousePos(canvasRef.current!, event);
+        if (coordinates) {
+            setIsPainting(true);
+            setMousePosition(coordinates);
+        }
+    };
+ 
+    const paint = (event: MouseEvent) => {
+        if (isPainting) {
+            const newMousePosition = getMousePos(canvasRef.current!, event);
+            if (mousePosition && newMousePosition) {
+                drawLine(mousePosition, newMousePosition);
+                setMousePosition(newMousePosition);
+            }
+        }
+    };
+ 
+    const stopPainting = () => {
+        setIsPainting(false);
+        predict();
+    };
+ 
+    const drawLine = (originalMousePosition: {x: number; y: number}, newMousePosition: {x: number; y: number}) => {
+        const canvas = canvasRef.current;
+        const context = canvas!.getContext('2d')!;
+        context.strokeStyle = 'white';
+        context.lineJoin = 'round';
+        context.lineWidth = 12;
+ 
+        context.beginPath();
+        context.moveTo(originalMousePosition.x, originalMousePosition.y);
+        context.lineTo(newMousePosition.x, newMousePosition.y);
+        context.closePath();
+ 
+        context.stroke();
+    };
+ 
+    const clearCanvas = () => {
+        const canvas = canvasRef.current;
+        const context = canvas!.getContext('2d')!;
+        context.clearRect(0, 0, canvas!.width, canvas!.height);
+        setPrediction('');
+        setConfidence('');
+    };
+ 
+    const preprocessCanvas = (canvas: HTMLCanvasElement) => {
+        return tf.tidy(() => {
+            let tensor = tf.browser.fromPixels(canvas)
+                .resizeNearestNeighbor([28, 28])
+                .mean(2)
+                .expandDims(2)
+                .expandDims()
+                .toFloat();
+            return tensor.div(255.0);
+        });
+    };
+ 
+    const predict = async () => {
+        if (canvasRef.current && model) {
+            const preprocessed = preprocessCanvas(canvasRef.current);
+            const prediction =  model.predict(preprocessed) as tf.Tensor<tf.Rank>;
+            const predictionData = await prediction.data();
+            // @ts-ignore
+            const predictedIndex = predictionData.indexOf(Math.max(...predictionData));
+            setPrediction(characters[predictedIndex]);
+            // @ts-ignore
+            setConfidence((Math.max(...predictionData) * 100).toFixed(2) + '%');
+        }
+    };
+ 
+    return (
         <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+            <h1>Reconnaissance de Caractères</h1>
+            <p>Prédit les caractères manuscrits en utilisant un modèle de deep learning.</p>
+            <p>Construit avec TensorFlow.js et Next.js</p>
+            <section>
+                <canvas
+                    id="main-canvas"
+                    ref={canvasRef}
+                    width="300"
+                    height="300"
+                    // @ts-ignore
+                    onMouseDown={startPainting}
+                    onMouseUp={stopPainting}
+                    onMouseLeave={stopPainting}
+                    // @ts-ignore
+                    onMouseMove={paint}
+                    style={{background: 'black'}}
+                ></canvas>
+                <div id="prediction">
+                    {prediction}
+                </div>
+            </section>
+            <div>
+                <button onClick={clearCanvas}>Effacer</button>
+            </div>
+            <div>
+                <p>Confidence: {confidence}</p>
+            </div>
         </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
-}
+    );
+};
+ 
+export default Home;
