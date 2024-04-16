@@ -16,7 +16,7 @@ const Home: React.FC = () => {
  
     useEffect(() => {
         const loadModel = async () => {
-            const loadedModel = await tf.loadLayersModel('/model/model.json');
+            const loadedModel = await tf.loadLayersModel('/model3/model.json');
             setModel(loadedModel);
             console.log('Model loaded');
         };

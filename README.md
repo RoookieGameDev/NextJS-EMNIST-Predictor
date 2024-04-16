@@ -23,5 +23,3 @@ Technologies implémentées
 •	TensorFlow.js : Employé pour le traitement des données de machine learning directement dans le navigateur de l'utilisateur.
 
 
-Pour plus de détails sur le projet ou pour y contribuer, vous pouvez visiter le dépôt GitHub [ajouter le lien ici].
-
